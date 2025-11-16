@@ -1,152 +1,338 @@
-import { motion } from 'motion/react';
-import { Plane, Plus, Filter, Calendar } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Mic } from 'lucide-react';
 import { Card } from '../../ui/card';
 import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
+import { EventData } from '../MobileApp';
+import { VoiceEventCreator } from './VoiceEventCreator';
 
-const events = [
-  {
-    id: 1,
-    name: 'Debate Club Meeting',
-    date: 'Tuesday, 6:00 PM',
-    location: 'Room 302',
-    prediction: 90,
-    attending: 18,
-    total: 20,
-    avatars: ['S', 'M', 'E', 'A'],
-  },
-  {
-    id: 2,
-    name: 'Public Speaking Workshop',
-    date: 'Friday, 5:00 PM',
-    location: 'Room 205',
-    prediction: 40,
-    attending: 8,
-    total: 20,
-    avatars: ['J', 'T', 'R'],
-  },
-  {
-    id: 3,
-    name: 'Tournament Prep',
-    date: 'Saturday, 10:00 AM',
-    location: 'Main Hall',
-    prediction: 75,
-    attending: 15,
-    total: 20,
-    avatars: ['S', 'M', 'E', 'J', 'T'],
-  },
+interface CaptainEventsMobileProps {
+  onCreateEvent?: (event: EventData, invitedMembers: string[]) => void;
+  onNavigateToAnalysis?: () => void;
+}
+
+const AVAILABLE_MEMBERS = [
+  { id: 'm1', name: 'Alice', emoji: '👩' },
+  { id: 'm2', name: 'Bob', emoji: '👨' },
+  { id: 'm3', name: 'Charlie', emoji: '👨' },
+  { id: 'm4', name: 'Diana', emoji: '👩' },
+  { id: 'm5', name: 'Evan', emoji: '👨' },
 ];
 
-export function CaptainEventsMobile() {
-  return (
-    <div className="h-full overflow-y-auto">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="sticky top-0 z-10 bg-[#0f172a] border-b border-[#1e293b] px-4 py-4"
-      >
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#429ebd] to-[#9fe7f5] rounded-xl flex items-center justify-center">
-              <Plane className="w-5 h-5 text-white transform rotate-45" />
-            </div>
-            <h1 className="text-xl text-[#e2e8f0]">Upcoming Events</h1>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-[#334155] text-[#94a3b8] bg-[#1e293b]"
-          >
-            <Filter className="w-4 h-4 mr-2" />
-            This Week
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-[#334155] text-[#94a3b8] bg-[#1e293b]"
-          >
-            Time
-          </Button>
-        </div>
-      </motion.div>
+export function CaptainEventsMobile({
+  onCreateEvent,
+  onNavigateToAnalysis,
+}: CaptainEventsMobileProps) {
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showVoiceCreator, setShowVoiceCreator] = useState(false);
+  const [formData, setFormData] = useState<EventData>({
+    name: '',
+    date: '',
+    time: '',
+    location: '',
+    description: '',
+  });
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-      <div className="p-4 space-y-4">
-        {events.map((event, index) => (
-          <motion.div
-            key={event.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ 
-              duration: 0.3, 
-              delay: index * 0.08,
-              ease: [0.215, 0.61, 0.355, 1]
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!formData.name || !formData.date || !formData.time) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    if (selectedMembers.length === 0) {
+      setError('Please invite at least one member');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (onCreateEvent) {
+        onCreateEvent(formData, selectedMembers);
+      }
+    } catch (err) {
+      setError('Failed to create event. Please try again.');
+      console.error('Error:', err);
+    } finally {
+      setLoading(false);
+      setShowCreateForm(false);
+      setFormData({ name: '', date: '', time: '', location: '', description: '' });
+      setSelectedMembers([]);
+    }
+  };
+
+  const toggleMember = (memberId: string) => {
+    setSelectedMembers((prev) =>
+      prev.includes(memberId)
+        ? prev.filter((id) => id !== memberId)
+        : [...prev, memberId]
+    );
+  };
+
+  // Voice Creator Mode
+  if (showVoiceCreator) {
+    return (
+      <VoiceEventCreator
+        onEventCreated={(event, members) => {
+          if (onCreateEvent) {
+            onCreateEvent(event, members);
+          }
+          setShowVoiceCreator(false);
+        }}
+        onCancel={() => setShowVoiceCreator(false)}
+      />
+    );
+  }
+
+  // Manual Form Mode
+  if (showCreateForm) {
+    return (
+      <div className="h-full flex flex-col">
+        {/* Header - Fixed */}
+        <div className="flex items-center justify-between mb-4 p-4 border-b border-[#334155] flex-shrink-0">
+          <h2 className="text-white text-xl font-semibold">Create New Event</h2>
+          <button
+            onClick={() => {
+              setShowCreateForm(false);
+              setError(null);
             }}
+            className="text-[#94a3b8] hover:text-white text-xl"
+            disabled={loading}
           >
-            <Card className="bg-[#1e293b] border-[#334155] p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="text-[#e2e8f0] mb-1">{event.name}</h3>
-                  <div className="flex items-center gap-2 text-sm text-[#94a3b8]">
-                    <Calendar className="w-3 h-3" />
-                    <span>{event.date}</span>
-                  </div>
-                  <p className="text-xs text-[#64748b] mt-1">{event.location}</p>
-                </div>
-                <Badge
-                  variant="secondary"
-                  className={
-                    event.prediction >= 70
-                      ? 'bg-[#10b981]/20 text-[#10b981]'
-                      : event.prediction >= 50
-                      ? 'bg-[#eab308]/20 text-[#eab308]'
-                      : 'bg-[#ef4444]/20 text-[#ef4444]'
+            ✕
+          </button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-4">
+          <div className="space-y-4 pb-6">
+            {error && (
+              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Event Name */}
+              <div>
+                <label className="block text-[#94a3b8] text-sm mb-2">Event Name *</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
                   }
-                >
-                  {event.prediction}%
-                </Badge>
+                  placeholder="Debate Club Meeting"
+                  className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-white placeholder-[#64748b] focus:outline-none focus:border-[#429ebd]"
+                  disabled={loading}
+                  required
+                />
               </div>
 
-              <div className="flex items-center gap-2 mb-3">
-                <div className="flex -space-x-2">
-                  {event.avatars.map((avatar, i) => (
-                    <div
-                      key={i}
-                      className="w-6 h-6 rounded-full bg-[#429ebd] border-2 border-[#1e293b] flex items-center justify-center text-white text-xs"
+              {/* Date */}
+              <div>
+                <label className="block text-[#94a3b8] text-sm mb-2">Date *</label>
+                <input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) =>
+                    setFormData({ ...formData, date: e.target.value })
+                  }
+                  className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#429ebd]"
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              {/* Time */}
+              <div>
+                <label className="block text-[#94a3b8] text-sm mb-2">Time *</label>
+                <input
+                  type="time"
+                  value={formData.time}
+                  onChange={(e) =>
+                    setFormData({ ...formData, time: e.target.value })
+                  }
+                  className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-[#429ebd]"
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-[#94a3b8] text-sm mb-2">Location</label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) =>
+                    setFormData({ ...formData, location: e.target.value })
+                  }
+                  placeholder="Room 302"
+                  className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-white placeholder-[#64748b] focus:outline-none focus:border-[#429ebd]"
+                  disabled={loading}
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-[#94a3b8] text-sm mb-2">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  placeholder="Add details..."
+                  className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-3 py-2 text-white placeholder-[#64748b] focus:outline-none focus:border-[#429ebd] resize-none h-20"
+                  disabled={loading}
+                />
+              </div>
+
+              {/* Invite Members */}
+              <div>
+                <label className="block text-[#94a3b8] text-sm mb-3">Invite Members *</label>
+                <div className="space-y-2">
+                  {AVAILABLE_MEMBERS.map((member) => (
+                    <button
+                      key={member.id}
+                      type="button"
+                      onClick={() => toggleMember(member.id)}
+                      disabled={loading}
+                      className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+                        selectedMembers.includes(member.id)
+                          ? 'border-[#429ebd] bg-[#429ebd]/10'
+                          : 'border-[#334155] bg-[#0f172a]'
+                      }`}
                     >
-                      {avatar}
-                    </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{member.emoji}</span>
+                        <span className="text-white text-sm">{member.name}</span>
+                      </div>
+                    </button>
                   ))}
                 </div>
-                <span className="text-xs text-[#94a3b8]">
-                  +{event.total - event.avatars.length} more
-                </span>
+
+                {selectedMembers.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {selectedMembers.map((memberId) => {
+                      const member = AVAILABLE_MEMBERS.find((m) => m.id === memberId);
+                      return (
+                        <Badge
+                          key={memberId}
+                          variant="secondary"
+                          className="bg-[#429ebd]/20 text-[#9fe7f5]"
+                        >
+                          {member?.emoji} {member?.name}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              <Button
-                size="sm"
-                className="w-full bg-[#429ebd] hover:bg-[#3a8ba8] text-white"
-              >
-                View Details
-              </Button>
-            </Card>
-          </motion.div>
-        ))}
+              {/* Submit Button */}
+              <div className="flex gap-2 pt-4 pb-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-[#429ebd] hover:bg-[#3a8ba8] text-white rounded-lg py-2 font-medium disabled:opacity-50"
+                >
+                  {loading ? 'Creating...' : 'Create & Analyze'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setError(null);
+                  }}
+                  disabled={loading}
+                  className="flex-1 border border-[#334155] text-[#94a3b8] rounded-lg py-2 font-medium disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <p className="text-xs text-[#64748b] text-center pb-4">
+                ✨ Our AI will analyze member availability
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Main Events View
+  return (
+    <div className="p-4 space-y-4">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-white text-xl font-semibold">Events</h2>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowVoiceCreator(true)}
+            className="flex items-center gap-2 bg-[#429ebd] hover:bg-[#3a8ba8] text-white rounded-full p-2"
+            title="Create event with voice"
+          >
+            <Mic className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="flex items-center gap-2 bg-[#429ebd] hover:bg-[#3a8ba8] text-white rounded-full p-2"
+            title="Create event manually"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
-      {/* Floating Action Button */}
-      <motion.button
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
-        whileTap={{ scale: 0.9 }}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-r from-[#429ebd] to-[#9fe7f5] rounded-full shadow-lg shadow-[#429ebd]/40 flex items-center justify-center text-white z-20"
-      >
-        <Plus className="w-6 h-6" />
-      </motion.button>
+      {/* Upcoming Events */}
+      <div className="space-y-3">
+        <h3 className="text-[#94a3b8] text-sm font-semibold">Upcoming Events</h3>
+
+        <Card className="bg-[#1e293b] border-[#334155] p-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <h4 className="text-white font-medium mb-1">Basketball Practice</h4>
+              <p className="text-[#94a3b8] text-sm">Friday, Nov 15 • 7:00 PM</p>
+              <p className="text-[#64748b] text-xs mt-1">Room 301 • 12 members invited</p>
+            </div>
+            <Badge variant="secondary" className="bg-[#10b981]/20 text-[#10b981]">
+              On Track
+            </Badge>
+          </div>
+        </Card>
+
+        <Card className="bg-[#1e293b] border-[#334155] p-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <h4 className="text-white font-medium mb-1">Debate Club Meeting</h4>
+              <p className="text-[#94a3b8] text-sm">Tuesday, Nov 12 • 5:00 PM</p>
+              <p className="text-[#64748b] text-xs mt-1">Room 302 • 8 members invited</p>
+            </div>
+            <Badge variant="secondary" className="bg-[#ef4444]/20 text-[#ef4444]">
+              2 Conflicts
+            </Badge>
+          </div>
+        </Card>
+      </div>
+
+      {/* Past Events */}
+      <div className="space-y-3">
+        <h3 className="text-[#94a3b8] text-sm font-semibold">Past Events</h3>
+
+        <Card className="bg-[#1e293b] border-[#334155] p-4 opacity-60">
+          <div>
+            <h4 className="text-white font-medium mb-1">Photo Walk</h4>
+            <p className="text-[#94a3b8] text-sm">Sunday, Nov 8 • 2:00 PM</p>
+            <p className="text-[#64748b] text-xs mt-1">15/18 attended</p>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

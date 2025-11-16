@@ -27,22 +27,12 @@ const itemVariants = {
 const upcomingEvents = [
   {
     id: 1,
-    name: 'Debate Club Meeting',
-    day: 'Tuesday',
-    time: '6:00 PM',
-    location: 'Room 302',
+    name: 'Basketball Practice',
+    day: 'Friday',
+    time: '7:00 PM',
+    location: 'ARM 302',
     prediction: 90,
     attending: 18,
-    total: 20,
-  },
-  {
-    id: 2,
-    name: 'Public Speaking Workshop',
-    day: 'Friday',
-    time: '5:00 PM',
-    location: 'Room 205',
-    prediction: 40,
-    attending: 8,
     total: 20,
   },
 ];
@@ -76,21 +66,6 @@ export function CaptainDashboardMobile() {
         animate="show"
         className="p-4 space-y-4"
       >
-        {/* Quick Stats Card */}
-        <motion.div variants={itemVariants}>
-          <Card className="bg-[#1e293b] border-l-4 border-l-[#429ebd] p-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[#94a3b8] text-sm">This Week</span>
-              <TrendingUp className="w-4 h-4 text-[#10b981]" />
-            </div>
-            <div className="text-4xl text-white mb-1">18/20</div>
-            <div className="flex items-center gap-2">
-              <span className="text-[#10b981] text-sm">+25% from last month</span>
-              <span className="text-[#10b981]">↗️</span>
-            </div>
-          </Card>
-        </motion.div>
-
         {/* Upcoming Events Section */}
         <motion.div variants={itemVariants}>
           <div className="flex items-center justify-between mb-3">

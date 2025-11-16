@@ -6,7 +6,7 @@ const messages = [
   {
     id: 1,
     sender: 'system',
-    text: "Hey! Event scheduled for Tuesday 5pm. I noticed you have class until 5pm—would 6pm work better?",
+    text: "Hey Member 2, just checking if you're all set for \"Technica Meeting\" happening at 17:00. Let me know!",
     time: '2:30pm',
   },
   {
@@ -14,18 +14,6 @@ const messages = [
     sender: 'member',
     text: "Yeah 6pm is perfect!",
     time: '2:45pm',
-  },
-  {
-    id: 3,
-    sender: 'system',
-    text: "Great! Moved to 6pm. Check your Google Calendar—it's been updated! 🎉",
-    time: '2:46pm',
-  },
-  {
-    id: 4,
-    sender: 'system',
-    text: "18/20 members confirmed. This will be a great event!",
-    time: '3:00pm',
   },
 ];
 
@@ -44,7 +32,7 @@ export function MemberChatsMobile() {
             <Plane className="w-5 h-5 text-white transform rotate-45" />
           </div>
           <div>
-            <h1 className="text-lg text-[#e2e8f0]">Debate Club Coordinators</h1>
+            <h1 className="text-lg text-[#e2e8f0]">Technica Team</h1>
             <p className="text-xs text-[#64748b]">20 members</p>
           </div>
         </div>

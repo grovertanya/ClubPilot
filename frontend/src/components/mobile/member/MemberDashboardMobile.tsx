@@ -27,6 +27,7 @@ const itemVariants = {
 export function MemberDashboardMobile() {
   return (
     <div className="h-full overflow-y-auto">
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -53,7 +54,38 @@ export function MemberDashboardMobile() {
         animate="show"
         className="p-4 space-y-4"
       >
-        {/* Calendar Overview */}
+
+        {/* 🔥 SWAPPED: Conflicts FIRST */}
+        <motion.div variants={itemVariants}>
+          <h2 className="text-lg text-[#e2e8f0] mb-3">Conflicts to Resolve</h2>
+          <Card className="bg-[#ef4444]/10 border-l-4 border-l-[#ef4444] p-4">
+            <div className="flex items-start gap-3 mb-3">
+              <AlertTriangle className="w-5 h-5 text-[#ef4444] flex-shrink-0 mt-1" />
+              <div className="flex-1">
+                <h3 className="text-[#e2e8f0] mb-1">Debate Club Meeting</h3>
+                <p className="text-sm text-[#94a3b8] mb-2">
+                  ⚠️ Class 4–5pm Tuesday
+                </p>
+                <p className="text-xs text-[#64748b] mb-2">
+                  40% likely you'll attend
+                </p>
+                <div className="bg-[#9fe7f5]/10 border border-[#9fe7f5]/20 rounded-lg p-2 mb-3">
+                  <p className="text-xs text-[#9fe7f5]">
+                    "I know you got class until 5—no pressure if you're tired!"
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  className="w-full bg-gradient-to-r from-[#429ebd] to-[#9fe7f5] text-white"
+                >
+                  View Details
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
+        {/* 🔥 SWAPPED: Today & Upcoming SECOND */}
         <motion.div variants={itemVariants}>
           <h2 className="text-lg text-[#e2e8f0] mb-3">Today & Upcoming</h2>
           <Card className="bg-[#1e293b] border-[#334155] p-4">
@@ -97,108 +129,11 @@ export function MemberDashboardMobile() {
                   </div>
                 </div>
               </div>
+
             </div>
           </Card>
         </motion.div>
 
-        {/* Conflicts to Resolve */}
-        <motion.div variants={itemVariants}>
-          <h2 className="text-lg text-[#e2e8f0] mb-3">Conflicts to Resolve</h2>
-          <Card className="bg-[#ef4444]/10 border-l-4 border-l-[#ef4444] p-4">
-            <div className="flex items-start gap-3 mb-3">
-              <AlertTriangle className="w-5 h-5 text-[#ef4444] flex-shrink-0 mt-1" />
-              <div className="flex-1">
-                <h3 className="text-[#e2e8f0] mb-1">Debate Club Meeting</h3>
-                <p className="text-sm text-[#94a3b8] mb-2">
-                  ⚠️ Class 4-5pm Tuesday
-                </p>
-                <p className="text-xs text-[#64748b] mb-2">
-                  40% likely you'll attend
-                </p>
-                <div className="bg-[#9fe7f5]/10 border border-[#9fe7f5]/20 rounded-lg p-2 mb-3">
-                  <p className="text-xs text-[#9fe7f5]">
-                    "I know you got class until 5—no pressure if you're tired!"
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  className="w-full bg-gradient-to-r from-[#429ebd] to-[#9fe7f5] text-white"
-                >
-                  View Details
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
-
-        {/* Upcoming Events */}
-        <motion.div variants={itemVariants}>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg text-[#e2e8f0]">Upcoming Events</h2>
-            <button className="text-sm text-[#429ebd]">All</button>
-          </div>
-          
-          <Card className="bg-[#1e293b] border-[#334155] p-4 mb-3">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h3 className="text-[#e2e8f0] mb-1">Debate Club</h3>
-                <p className="text-sm text-[#94a3b8]">Tuesday, 6:00 PM</p>
-              </div>
-              <Badge variant="secondary" className="bg-[#10b981]/20 text-[#10b981]">
-                ✅ Confirmed
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[#64748b]">18/20 attending</span>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-[#429ebd] text-[#429ebd]"
-              >
-                View Event
-              </Button>
-            </div>
-          </Card>
-
-          <Card className="bg-[#1e293b] border-[#334155] p-4">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <h3 className="text-[#e2e8f0] mb-1">Public Speaking Workshop</h3>
-                <p className="text-sm text-[#94a3b8]">Friday, 5:00 PM</p>
-              </div>
-              <Badge variant="secondary" className="bg-[#eab308]/20 text-[#eab308]">
-                Interested
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-[#64748b]">8/20 attending</span>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-[#429ebd] text-[#429ebd]"
-              >
-                View Event
-              </Button>
-            </div>
-          </Card>
-        </motion.div>
-
-        {/* Your Attendance Stats */}
-        <motion.div variants={itemVariants}>
-          <Card className="bg-gradient-to-br from-[#429ebd]/20 to-[#9fe7f5]/10 border-[#429ebd]/30 p-4">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-3xl">🏆</span>
-              <div>
-                <h3 className="text-[#e2e8f0]">You're a reliable member!</h3>
-                <p className="text-sm text-[#94a3b8]">14/16 events attended</p>
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl text-white mb-1">87%</div>
-              <p className="text-sm text-[#94a3b8]">Attendance Rate</p>
-            </div>
-          </Card>
-        </motion.div>
       </motion.div>
     </div>
   );

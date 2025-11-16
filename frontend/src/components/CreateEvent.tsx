@@ -1,71 +1,65 @@
-import { useState } from 'react';
-import { X, Loader } from 'lucide-react';
-import { Card } from './ui/card';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { Textarea } from './ui/textarea';
-import { Badge } from './ui/badge';
-import { EventData } from './mobile/MobileApp';
+import { useState, useEffect } from "react";
+import { X, Loader } from "lucide-react";
+import { Card } from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
+import { Badge } from "./ui/badge";
+
+import { Member } from "../types/member";
+import { EventData } from "./mobile/MobileApp";
 
 interface CreateEventProps {
   onCancel: () => void;
   onCreate: (event: EventData, members: string[]) => void;
-  captainId: string;
 }
 
-const [members, setMembers] = useState([]);
-
-useEffect(() => {
-  fetch("http://localhost:8000/api/members")
-    .then(res => res.json())
-    .then(data => setMembers(data));
-}, []);
-
-
-export function CreateEvent({
-  onCancel,
-  onCreate,
-  captainId,
-}: CreateEventProps) {
-  const [formData, setFormData] = useState<EventData>({
-    name: '',
-    date: '',
-    time: '',
-    location: '',
-    description: '',
-  });
-
+export function CreateEvent({ onCancel, onCreate }: CreateEventProps) {
+  const [members, setMembers] = useState<Member[]>([]);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const [formData, setFormData] = useState<EventData>({
+    name: "",
+    date: "",
+    time: "",
+    location: "",
+    description: "",
+  });
 
-    if (!formData.name || !formData.date || !formData.time) {
-      setError('Please fill in all required fields');
-      return;
-    }
+  // ---------------------------
+  // LOAD MEMBERS SAFELY
+  // ---------------------------
+  useEffect(() => {
+    console.log("📡 Fetching members from backend...");
 
-    if (selectedMembers.length === 0) {
-      setError('Please invite at least one member');
-      return;
-    }
+    fetch("http://localhost:8000/api/members")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(
+          "📌 Members API Response:",
+          data,
+          "IsArray:", Array.isArray(data)
+        );
 
-    setLoading(true);
-    try {
-      // Pass event data and selected members to parent
-      onCreate(formData, selectedMembers);
-    } catch (err) {
-      setError('Failed to create event. Please try again.');
-      console.error('Error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+        if (Array.isArray(data)) {
+          setMembers(data);
+        } else {
+          console.error("❌ Backend returned NON-ARRAY for members:", data);
+          setMembers([]); // prevent crashes
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Failed to load members:", err);
+        setMembers([]); // safe fallback
+      });
+  }, []);
 
+  // ---------------------------
+  // TOGGLE MEMBER SELECTION
+  // ---------------------------
   const toggleMember = (memberId: string) => {
     setSelectedMembers((prev) =>
       prev.includes(memberId)
@@ -74,184 +68,214 @@ export function CreateEvent({
     );
   };
 
+  // ---------------------------
+  // SUBMIT EVENT
+  // ---------------------------
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!formData.name || !formData.date || !formData.time) {
+      setError("Please fill in all required fields");
+      return;
+    }
+    if (selectedMembers.length === 0) {
+      setError("Please invite at least one member");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log("📤 Creating event with data:", formData, selectedMembers);
+      onCreate(formData, selectedMembers);
+    } catch (err) {
+      console.error("❌ Error creating event:", err);
+      setError("Failed to create event.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="p-8 min-h-screen overflow-auto">
-      <Card className="bg-[#1e293b] border-[#334155] max-w-2xl mx-auto">
-        <div className="flex items-center justify-between p-6 border-b border-[#334155]">
-          <h2 className="text-white text-2xl">Create New Event</h2>
+    <div className="p-6 min-h-screen overflow-auto bg-[#020617]">
+      <Card className="bg-[#020617] border border-[#1e293b] max-w-xl mx-auto rounded-3xl shadow-2xl shadow-[#020617]/60">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#1e293b]">
+          <div>
+            <p className="text-xs tracking-wide text-[#64748b] uppercase">
+              Smart Event Creator
+            </p>
+            <h2 className="text-white text-xl font-semibold mt-1">
+              Create a new club event
+            </h2>
+          </div>
           <button
             onClick={onCancel}
-            className="text-[#94a3b8] hover:text-white transition-colors"
             disabled={loading}
+            className="text-[#64748b] hover:text-white transition-colors"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-6">
           {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+            <div className="p-3 bg-red-500/10 border border-red-500/40 rounded-xl text-red-300 text-sm">
               {error}
             </div>
           )}
 
           {/* Event Name */}
-          <div className="space-y-2">
-            <Label htmlFor="event-name" className="text-[#94a3b8]">
+          <div className="space-y-1.5">
+            <Label className="text-[#94a3b8] text-xs uppercase tracking-wide">
               Event Name *
             </Label>
             <Input
-              id="event-name"
+              className="bg-[#020617] border-[#1f2937] text-white rounded-xl focus:border-[#38bdf8] focus:ring-0"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              placeholder="Debate Club Meeting"
-              className="bg-[#0f172a] border-[#334155] text-white"
+              placeholder="Debate Club Strategy Session"
               required
-              disabled={loading}
             />
           </div>
 
-          {/* Date & Time */}
+          {/* Date + Time */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="preferred-date" className="text-[#94a3b8]">
+            <div className="space-y-1.5">
+              <Label className="text-[#94a3b8] text-xs uppercase tracking-wide">
                 Date *
               </Label>
               <Input
-                id="preferred-date"
                 type="date"
+                className="bg-[#020617] border-[#1f2937] text-white rounded-xl focus:border-[#38bdf8] focus:ring-0"
                 value={formData.date}
                 onChange={(e) =>
                   setFormData({ ...formData, date: e.target.value })
                 }
-                className="bg-[#0f172a] border-[#334155] text-white"
                 required
-                disabled={loading}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="preferred-time" className="text-[#94a3b8]">
+            <div className="space-y-1.5">
+              <Label className="text-[#94a3b8] text-xs uppercase tracking-wide">
                 Time *
               </Label>
               <Input
-                id="preferred-time"
                 type="time"
+                className="bg-[#020617] border-[#1f2937] text-white rounded-xl focus:border-[#38bdf8] focus:ring-0"
                 value={formData.time}
                 onChange={(e) =>
                   setFormData({ ...formData, time: e.target.value })
                 }
-                className="bg-[#0f172a] border-[#334155] text-white"
                 required
-                disabled={loading}
               />
             </div>
           </div>
 
           {/* Location */}
-          <div className="space-y-2">
-            <Label htmlFor="location" className="text-[#94a3b8]">
+          <div className="space-y-1.5">
+            <Label className="text-[#94a3b8] text-xs uppercase tracking-wide">
               Location
             </Label>
             <Input
-              id="location"
+              className="bg-[#020617] border-[#1f2937] text-white rounded-xl focus:border-[#38bdf8] focus:ring-0"
               value={formData.location}
               onChange={(e) =>
                 setFormData({ ...formData, location: e.target.value })
               }
-              placeholder="Room 302"
-              className="bg-[#0f172a] border-[#334155] text-white"
-              disabled={loading}
+              placeholder="Room 302, Humanities Building"
             />
           </div>
 
           {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-[#94a3b8]">
-              Description (Optional)
+          <div className="space-y-1.5">
+            <Label className="text-[#94a3b8] text-xs uppercase tracking-wide">
+              Description
             </Label>
             <Textarea
-              id="description"
+              className="bg-[#020617] border-[#1f2937] text-white rounded-xl focus:border-[#38bdf8] focus:ring-0 min-h-[80px]"
               value={formData.description}
               onChange={(e) =>
                 setFormData({ ...formData, description: e.target.value })
               }
-              placeholder="Add any additional details..."
-              className="bg-[#0f172a] border-[#334155] text-white min-h-[100px]"
-              disabled={loading}
+              placeholder="Add any context for members…"
             />
           </div>
 
-          {/* Invite Members */}
-          <div className="space-y-3">
-            <Label className="text-[#94a3b8]">Invite Members *</Label>
+          {/* Members */}
+          <div className="space-y-2">
+            <Label className="text-[#94a3b8] text-xs uppercase tracking-wide">
+              Invite Members *
+            </Label>
+
             <div className="grid grid-cols-2 gap-2">
-              {members.map((member) => (
-                <button
-                  key={member.id}
-                  type="button"
-                  onClick={() => toggleMember(member.id)}
-                  disabled={loading}
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    selectedMembers.includes(member.id)
-                      ? 'border-[#429ebd] bg-[#429ebd]/10'
-                      : 'border-[#334155] bg-[#0f172a] hover:border-[#429ebd]/50'
-                  } disabled:opacity-50`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{member.emoji}</span>
-                    <span className="text-white text-sm">{member.name}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {selectedMembers.map((memberId) => {
-                const member = AVAILABLE_MEMBERS.find((m) => m.id === memberId);
-                return (
-                  <Badge
-                    key={memberId}
-                    variant="secondary"
-                    className="bg-[#429ebd]/20 text-[#9fe7f5]"
+              {Array.isArray(members) &&
+                members.map((member) => (
+                  <button
+                    key={member.id}
+                    type="button"
+                    onClick={() => toggleMember(member.id)}
+                    className={`p-3 rounded-xl border text-left transition-all ${
+                      selectedMembers.includes(member.id)
+                        ? "border-[#38bdf8] bg-[#0b1120]"
+                        : "border-[#1f2937] bg-[#020617]"
+                    }`}
                   >
-                    {member?.emoji} {member?.name}
-                  </Badge>
-                );
-              })}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{member.emoji}</span>
+                      <span className="text-sm text-white">{member.name}</span>
+                    </div>
+                  </button>
+                ))}
             </div>
+
+            {selectedMembers.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {selectedMembers.map((id) => {
+                  const m = members.find((mm) => mm.id === id);
+                  return (
+                    <Badge
+                      key={id}
+                      className="bg-[#0b1120] border border-[#1f2937] text-[#e5e7eb] rounded-full px-3 py-1 text-xs"
+                    >
+                      {m?.emoji} {m?.name}
+                    </Badge>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {/* Submit Buttons */}
-          <div className="flex gap-3 pt-4">
+          {/* Buttons */}
+          <div className="flex gap-3 pt-4 pb-4">
             <Button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-[#429ebd] hover:bg-[#3a8ba8] text-white disabled:opacity-50"
+              className="flex-1 bg-[#38bdf8] hover:bg-[#0ea5e9] text-white rounded-2xl"
             >
               {loading ? (
-                <>
-                  <Loader className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
-                </>
+                <Loader className="w-4 h-4 animate-spin" />
               ) : (
-                'Create & Analyze'
+                "Create & Analyze"
               )}
             </Button>
+
             <Button
               type="button"
               onClick={onCancel}
-              variant="outline"
               disabled={loading}
-              className="flex-1 border-[#334155] text-[#94a3b8] hover:bg-[#334155] disabled:opacity-50"
+              className="flex-1 border-[#1f2937] text-[#94a3b8] rounded-2xl"
+              variant="outline"
             >
               Cancel
             </Button>
           </div>
 
-          <p className="text-xs text-[#64748b] text-center">
-            ✨ Our AI will analyze member availability and suggest better times
+          <p className="text-[11px] text-[#64748b] text-center pb-2">
+            ClubPilot will run smart conflict analysis right after you create this event.
           </p>
         </form>
       </Card>

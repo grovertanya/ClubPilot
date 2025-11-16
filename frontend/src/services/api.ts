@@ -53,7 +53,6 @@ export interface EventSchedulingResponse {
     attendance_percentage: number;
     conflicts_count: number;
   };
-  member_availabilities?: MemberAvailability[];
   conflicts: any[];
   recommendations: SchedulingRecommendation[];
   captain_message: string;
@@ -71,76 +70,75 @@ export interface GeneratedMessage {
   member_personality: string[];
   approval_required: boolean;
 }
+// // ==================== Mock Data ====================
 
-// ==================== Mock Data ====================
-
-const MOCK_MEMBERS: Member[] = [
-  {
-    id: 'm1',
-    name: 'Alice',
-    emoji: '👩',
-    phone: '+1-234-567-0001',
-    class_schedule: ['MWF 10-11am', 'TR 2-3:30pm'],
-    personality_traits: ['funny', 'reliable', 'introverted'],
-    communication_style: {
-      formality_level: 'casual',
-      humor_frequency: 0.8,
-      emoji_usage: 0.7,
-    },
-  },
-  {
-    id: 'm2',
-    name: 'Bob',
-    emoji: '👨',
-    phone: '+1-234-567-0002',
-    class_schedule: ['MWF 9-10am', 'W 3-5pm'],
-    personality_traits: ['dependable', 'organized', 'outgoing'],
-    communication_style: {
-      formality_level: 'formal',
-      humor_frequency: 0.3,
-      emoji_usage: 0.1,
-    },
-  },
-  {
-    id: 'm3',
-    name: 'Charlie',
-    emoji: '👨',
-    phone: '+1-234-567-0003',
-    class_schedule: ['TR 11am-12:30pm'],
-    personality_traits: ['creative', 'social', 'energetic'],
-    communication_style: {
-      formality_level: 'neutral',
-      humor_frequency: 0.6,
-      emoji_usage: 0.5,
-    },
-  },
-  {
-    id: 'm4',
-    name: 'Diana',
-    emoji: '👩',
-    phone: '+1-234-567-0004',
-    class_schedule: ['MWF 1-2pm'],
-    personality_traits: ['analytical', 'quiet', 'thoughtful'],
-    communication_style: {
-      formality_level: 'formal',
-      humor_frequency: 0.2,
-      emoji_usage: 0.2,
-    },
-  },
-  {
-    id: 'm5',
-    name: 'Evan',
-    emoji: '👨',
-    phone: '+1-234-567-0005',
-    class_schedule: ['TR 1-2:30pm'],
-    personality_traits: ['enthusiastic', 'helpful', 'friendly'],
-    communication_style: {
-      formality_level: 'casual',
-      humor_frequency: 0.7,
-      emoji_usage: 0.6,
-    },
-  },
-];
+// const MOCK_MEMBERS: Member[] = [
+//   {
+//     id: 'm1',
+//     name: 'Alice',
+//     emoji: '👩',
+//     phone: '+1-234-567-0001',
+//     class_schedule: ['MWF 10-11am', 'TR 2-3:30pm'],
+//     personality_traits: ['funny', 'reliable', 'introverted'],
+//     communication_style: {
+//       formality_level: 'casual',
+//       humor_frequency: 0.8,
+//       emoji_usage: 0.7,
+//     },
+//   },
+//   {
+//     id: 'm2',
+//     name: 'Bob',
+//     emoji: '👨',
+//     phone: '+1-234-567-0002',
+//     class_schedule: ['MWF 9-10am', 'W 3-5pm'],
+//     personality_traits: ['dependable', 'organized', 'outgoing'],
+//     communication_style: {
+//       formality_level: 'formal',
+//       humor_frequency: 0.3,
+//       emoji_usage: 0.1,
+//     },
+//   },
+//   {
+//     id: 'm3',
+//     name: 'Charlie',
+//     emoji: '👨',
+//     phone: '+1-234-567-0003',
+//     class_schedule: ['TR 11am-12:30pm'],
+//     personality_traits: ['creative', 'social', 'energetic'],
+//     communication_style: {
+//       formality_level: 'neutral',
+//       humor_frequency: 0.6,
+//       emoji_usage: 0.5,
+//     },
+//   },
+//   {
+//     id: 'm4',
+//     name: 'Diana',
+//     emoji: '👩',
+//     phone: '+1-234-567-0004',
+//     class_schedule: ['MWF 1-2pm'],
+//     personality_traits: ['analytical', 'quiet', 'thoughtful'],
+//     communication_style: {
+//       formality_level: 'formal',
+//       humor_frequency: 0.2,
+//       emoji_usage: 0.2,
+//     },
+//   },
+//   {
+//     id: 'm5',
+//     name: 'Evan',
+//     emoji: '👨',
+//     phone: '+1-234-567-0005',
+//     class_schedule: ['TR 1-2:30pm'],
+//     personality_traits: ['enthusiastic', 'helpful', 'friendly'],
+//     communication_style: {
+//       formality_level: 'casual',
+//       humor_frequency: 0.7,
+//       emoji_usage: 0.6,
+//     },
+//   },
+// ];
 
 // ==================== API Calls ====================
 
@@ -154,36 +152,33 @@ export async function getMembers(): Promise<Member[]> {
     }
   }
   
-
-  export async function createEventWithScheduling(
-    eventName: string,
-    eventType: string,
-    captainId: string,
-    proposedTime: string,
-    invitedMembers: string[],
-    duration: number = 60,
-    description?: string
-  ): Promise<EventSchedulingResponse> {
+  export async function createEventWithScheduling() {
+    const hardcodedBody = {
+      event_name: "technica",
+      event_type: "meeting",
+      captain_id: "captain-1",
+      proposed_time: "2025-02-17T17:00:00",
+      duration_minutes: 60,
+      invited_members: ["m1", "m2"],  // always valid & exists in backend mock
+      description: "Hardcoded demo event"
+    };
+  
+    console.log("📤 SENDING BODY:", hardcodedBody);
+  
     try {
-      const response = await api.post<EventSchedulingResponse>(
-        '/api/events/create-with-scheduling',
-        {
-          event_name: eventName,
-          event_type: eventType,
-          captain_id: captainId,
-          proposed_time: proposedTime,
-          duration_minutes: duration,
-          invited_members: invitedMembers,
-          description,
-        }
+      const response = await api.post(
+        "/api/events/create-with-scheduling",
+        hardcodedBody
       );
       return response.data;
-    } catch (error) {
-      console.error("Failed to create event:", error);
-      throw error;
+    } catch (err) {
+      console.error("❌ Event failed:", err);
+      throw err;
     }
   }
   
+  
+
 
 export async function generateConflictMessage(
   memberId: string,
@@ -203,8 +198,9 @@ export async function generateConflictMessage(
     );
     return response.data;
   } catch (error) {
-    console.warn('Backend message generation unavailable, using mock');
-    return generateMockMessage(memberId);
+    console.error("Backend error:", error);
+    throw error;
+
   }
 }
 
@@ -228,141 +224,186 @@ export async function sendApprovedMessages(
   }
 }
 
-// ==================== Mock Data Generators ====================
+// ===============================================================
+// Automated Agent Orchestrator (Compatible with AutomatedAgentView)
+// ===============================================================
 
-function generateMockSchedulingResponse(
-  eventName: string,
-  proposedTime: string,
-  invitedMembers: string[]
-): EventSchedulingResponse {
-  const predictedAttendance = Math.floor(invitedMembers.length * 0.65);
-  const attendancePercentage = Math.round(
-    (predictedAttendance / invitedMembers.length) * 100
-  );
+export type AgentState =
+  | "idle"
+  | "listening"
+  | "parsing"
+  | "analyzing"
+  | "conflicts_found"
+  | "waiting_approval"
+  | "generating_messages"
+  | "ready_to_send"
+  | "sending_messages"
+  | "complete"
+  | "error";
 
-  const memberAvailabilities = invitedMembers.map((memberId) => {
-    const statuses: Array<'available' | 'maybe' | 'unavailable'> = [
-      'available',
-      'available',
-      'maybe',
-      'unavailable',
-    ];
-    const randomStatus =
-      statuses[Math.floor(Math.random() * statuses.length)];
-    const member = MOCK_MEMBERS.find((m) => m.id === memberId);
+export interface AgentWorkflowStep {
+  state: AgentState;
+  message: string;
+  timestamp: Date;
+  data?: any;
+}
 
-    return {
-      member_id: memberId,
-      member_name: member?.name || 'Unknown',
-      phone_number: member?.phone || '',
-      status: randomStatus,
-      confidence: Math.random() * 0.4 + 0.6,
+export interface AgentWorkflow {
+  currentState: AgentState;
+  steps: AgentWorkflowStep[];
+  approval_needed: boolean;
+  recommendations?: any[];
+  messages?: any[];
+}
+
+type WorkflowCallback = (wf: AgentWorkflow) => void;
+
+class AgentController {
+  private workflow: AgentWorkflow = {
+    currentState: "idle",
+    steps: [],
+    approval_needed: false,
+  };
+
+  private subscribers: WorkflowCallback[] = [];
+  private eventData: any = null;
+  private generatedMessages: any[] = [];
+
+  // ---------- Internal Helpers ----------
+  private pushStep(state: AgentState, message: string, data?: any) {
+    const step: AgentWorkflowStep = {
+      state,
+      message,
+      timestamp: new Date(),
+      data,
     };
-  });
+    this.workflow.steps.push(step);
+    this.workflow.currentState = state;
+    this.notify();
+  }
 
-  const date = new Date(proposedTime);
-  const recommendedTime1 = new Date(date.getTime() + 2 * 60 * 60 * 1000);
-  const recommendedTime2 = new Date(date.getTime() + 24 * 60 * 60 * 1000);
-  const recommendedTime3 = new Date(date.getTime() + 48 * 60 * 60 * 1000);
+  private notify() {
+    this.subscribers.forEach((cb) => cb({ ...this.workflow }));
+  }
 
-  return {
-    event_id: `evt_${Date.now()}`,
-    event: {
-      event_name: eventName,
-      event_type: 'social',
-      captain_id: 'captain_1',
-      proposed_time: proposedTime,
-      duration_minutes: 60,
-      invited_members: invitedMembers,
-    },
-    status: 'optimized',
-    scheduling_analysis: {
-      total_invited: invitedMembers.length,
-      predicted_attendance: predictedAttendance,
-      attendance_percentage: attendancePercentage,
-      conflicts_count: invitedMembers.length - predictedAttendance,
-    },
-    member_availabilities: memberAvailabilities,
-    conflicts: [],
-    recommendations: [
-      {
-        original_time: proposedTime,
-        recommended_time: recommendedTime1.toISOString(),
-        current_predicted_attendance: predictedAttendance,
-        recommended_predicted_attendance: predictedAttendance + 2,
-        attendance_improvement: 2,
-        confidence: 0.85,
-        reason: `Better timing works for 2 more members`,
-      },
-      {
-        original_time: proposedTime,
-        recommended_time: recommendedTime2.toISOString(),
-        current_predicted_attendance: predictedAttendance,
-        recommended_predicted_attendance: predictedAttendance + 3,
-        attendance_improvement: 3,
-        confidence: 0.92,
-        reason: `Friday evening has historically high attendance`,
-      },
-      {
-        original_time: proposedTime,
-        recommended_time: recommendedTime3.toISOString(),
-        current_predicted_attendance: predictedAttendance,
-        recommended_predicted_attendance: predictedAttendance + 1,
-        attendance_improvement: 1,
-        confidence: 0.78,
-        reason: `Weekend timing works better for most members`,
-      },
-    ],
-    captain_message: `✨ Smart Analysis Complete\n\nCurrent time: ${attendancePercentage}% predicted attendance\nBetter option: +${Math.max(2, invitedMembers.length - predictedAttendance)} more members can attend Friday evening`,
-    requires_captain_action: true,
-  };
+  // ---------- Public API ----------
+  subscribe(cb: WorkflowCallback) {
+    this.subscribers.push(cb);
+    cb({ ...this.workflow });
+  }
+
+  reset() {
+    this.workflow = {
+      currentState: "idle",
+      steps: [],
+      approval_needed: false,
+    };
+    this.eventData = null;
+    this.generatedMessages = [];
+    this.notify();
+  }
+
+  // ---------- MAIN AUTOMATED FLOW ----------
+  async createEventWithAutomation(eventInfo: any, members: string[], captainId: string) {
+    try {
+      this.pushStep("parsing", "Parsing event details...", eventInfo);
+
+      this.pushStep("analyzing", "Creating event with smart scheduling...");
+
+      const eventResponse = await createEventWithScheduling(
+        eventInfo.name,
+        "general",
+        captainId,
+        `${eventInfo.date}T${eventInfo.time}`,
+        members,
+        60,
+        eventInfo.description
+      );
+
+      this.eventData = eventResponse;
+
+      this.pushStep("analyzing", "Event created. Checking for conflicts...", eventResponse);
+
+      // Conflict detection
+      const conflictResponse = await api.post("/api/ai/detect-conflicts", {
+        event_id: eventResponse.event_id,
+        event_name: eventInfo.name,
+        proposed_time: `${eventInfo.date}T${eventInfo.time}`,
+        invited_members: members,
+      });
+
+      const conflicts = conflictResponse.data.conflicts || [];
+
+      if (conflicts.length === 0) {
+        this.pushStep("complete", "No conflicts found. Event scheduled successfully!", {
+          event: eventResponse,
+        });
+        return;
+      }
+
+      this.pushStep("conflicts_found", "Conflicts detected.", conflicts);
+
+      // Generate messages
+      this.pushStep("generating_messages", "Generating personalized messages...");
+
+      this.generatedMessages = [];
+
+      for (const c of conflicts) {
+        const msg = await generateConflictMessage(
+          c.member_id,
+          c.conflict_type,
+          "Prior commitment",
+          eventInfo.name
+        );
+
+        this.generatedMessages.push({
+          member_id: c.member_id,
+          member_name: c.member_name,
+          message: msg.message,
+        });
+      }
+
+      this.workflow.messages = this.generatedMessages;
+      this.workflow.recommendations = eventResponse.recommendations || [];
+      this.workflow.approval_needed = true;
+
+      this.pushStep("waiting_approval", "Approval required to proceed.", {
+        recommendations: this.workflow.recommendations,
+        messages: this.generatedMessages,
+      });
+      return eventResponse;
+
+    } catch (err) {
+      console.error("Agent automation error:", err);
+      this.pushStep("error", "An error occurred.", err);
+    }
+  }
+
+  // ---------- APPROVAL HANDLERS ----------
+  async approveReschedule(newTime: string) {
+    this.pushStep("analyzing", "Applying new recommended time...", newTime);
+
+    this.eventData.event.proposed_time = newTime;
+
+    this.workflow.approval_needed = false;
+    this.notify();
+
+    this.pushStep("ready_to_send", "Ready to send messages.");
+  }
+
+  async declineReschedule() {
+    this.workflow.approval_needed = false;
+    this.pushStep("ready_to_send", "Skipping reschedule. Ready to send messages.");
+  }
+
+  // ---------- SEND MESSAGES ----------
+  async sendMessages() {
+    this.pushStep("sending_messages", "Sending messages to members...");
+
+    const result = await sendApprovedMessages(this.eventData.event_id, this.generatedMessages);
+
+    this.pushStep("complete", "All messages sent successfully!", result);
+  }
 }
 
-function generateMockMessage(memberId: string): GeneratedMessage {
-  const member = MOCK_MEMBERS.find((m) => m.id === memberId);
-
-  const messages = {
-    casual: {
-      message: `hey! so we're thinking of moving the event to a better time. you free? lmk! 😊`,
-      tone_analysis: {
-        formality: 'casual',
-        humor_level: 0.7,
-        emoji_usage: 0.8,
-      },
-    },
-    formal: {
-      message: `We are considering rescheduling the event to better accommodate everyone's availability. Would this work for you?`,
-      tone_analysis: {
-        formality: 'formal',
-        humor_level: 0.1,
-        emoji_usage: 0.0,
-      },
-    },
-    neutral: {
-      message: `Hey, we're looking at a better time for the event. Could you do Friday instead?`,
-      tone_analysis: {
-        formality: 'neutral',
-        humor_level: 0.4,
-        emoji_usage: 0.3,
-      },
-    },
-  };
-
-  const styleKey = member?.communication_style.formality_level || 'neutral';
-  const selectedMessage = messages[styleKey as keyof typeof messages];
-
-  return {
-    message: selectedMessage.message,
-    tone_analysis: selectedMessage.tone_analysis,
-    confidence: 0.87,
-    member_personality: member?.personality_traits || [],
-    approval_required: true,
-  };
-}
-
-// ==================== Error Handling ====================
-
-export function isBackendDown(response: any): boolean {
-  // Check if response is from mock data
-  return response?.event_id?.startsWith('evt_');
-}
+export const agent = new AgentController();

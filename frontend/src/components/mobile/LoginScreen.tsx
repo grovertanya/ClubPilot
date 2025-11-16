@@ -40,7 +40,7 @@ export function LoginScreen({ onSelectRole }: LoginScreenProps) {
         transition={{ duration: 0.4, delay: 0.5 }}
         className="text-[#94a3b8] text-center mb-12"
       >
-        Coordination made effortless
+        Coordination made effortless. Choose your role to get started.
       </motion.p>
 
       <motion.div
@@ -70,7 +70,7 @@ export function LoginScreen({ onSelectRole }: LoginScreenProps) {
         transition={{ duration: 0.4, delay: 0.8 }}
         className="text-[#64748b] text-sm text-center mt-auto"
       >
-        Manage your club smarter
+        Your clubs, managed smarter with ClubPilot.
       </motion.p>
     </div>
   );
